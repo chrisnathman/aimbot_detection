@@ -11,6 +11,7 @@ import argparse
 import os
 
 # resolution to display images so they are not cut off
+# note that this does not affect the image processing
 TARGET_RES = (1280, 720)
 
 if __name__ == '__main__':
@@ -18,10 +19,12 @@ if __name__ == '__main__':
                                                   movement in cs:go gameplay')
 
     parser.add_argument('clip', type=str, help='name of gameplay clip in \
-                                                ../gameplay/raw/')
+                                                ../../gameplay/raw/')
     args = parser.parse_args()
 
-    vidPath = os.path.join('..', 'gameplay', 'raw', args.clip)
+    vidPath = os.path.join('..', '..', 'gameplay', 'raw', args.clip)
+
+    color = np.random.randint(0, 255, (100,3))
 
     vid = cv2.VideoCapture()
     if not vid.open(vidPath):
@@ -56,10 +59,12 @@ if __name__ == '__main__':
 
     oldCorners = cv2.goodFeaturesToTrack(prevGray, mask=hudMask, **cornerParams)
 
+    if len(oldCorners[0][0]) < 1:
+        print('no points found to track')
+        exit(1)
+
     # mask for drawing
     mask = np.zeros_like(prevFrame)
-
-    color = np.random.randint(0, 255, (100,3))
 
     while True:
         ret, frame = vid.read()
@@ -74,14 +79,31 @@ if __name__ == '__main__':
                                                            oldCorners, None,
                                                            **opFlowParams)
 
+        if newCorners is None:
+            print('failed to track points')
+            break
+
         goodNew = newCorners[status==1]
         goodOld = oldCorners[status==1]
 
-        for i,(new,old) in enumerate(zip(goodNew, goodOld)):
-            a,b = new.ravel()
-            c,d = old.ravel()
-            mask = cv2.line(mask, (a,b), (c,d), color[i].tolist(), 2)
-            frame = cv2.circle(frame, (a,b), 5, color[i].tolist(), -1)
+        # calculate movement from difference in points
+        ptsMovement = np.subtract(goodNew, goodOld)
+        screenMovement = np.subtract(goodOld, goodNew)
+
+        ARROW_SCALAR = 3
+        for i,movement in enumerate(ptsMovement):
+            startPt = (int(goodOld[i][0]), int(goodOld[i][1]))
+            endPt = (startPt[0] + int(round(movement[0], 0))*ARROW_SCALAR,
+                     startPt[1] + int(round(movement[1], 0))*ARROW_SCALAR)
+            frame = cv2.arrowedLine(frame, startPt, endPt, color[i].tolist(), 3,
+                                    cv2.LINE_4, 0, 0.3)
+            
+
+        #for i,(new,old) in enumerate(zip(goodNew, goodOld)):
+        #    a,b = new.ravel()
+        #    c,d = old.ravel()
+        #    mask = cv2.line(mask, (int(a),int(b)), (int(c),int(d)), color[i].tolist(), 2)
+        #    frame = cv2.circle(frame, (int(a),int(b)), 5, color[i].tolist(), -1)
         img = cv2.add(frame, mask)
 
         cv2.imshow('frame', cv2.resize(img, TARGET_RES))
@@ -90,6 +112,11 @@ if __name__ == '__main__':
         if k == 27:
             break
 
-        prevFrame = frame.copy()
         prevGray = newGray.copy()
-        oldCorners = goodNew.reshape(-1,1,2)
+
+        # redetermine points to track to maintain tracking quality
+        oldCorners = cv2.goodFeaturesToTrack(prevGray, mask=hudMask,
+                                             **cornerParams)
+        if len(oldCorners[0][0]) < 1:
+            print('no points found to track')
+            exit(1)
