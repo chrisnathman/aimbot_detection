@@ -1,5 +1,5 @@
 #
-# script to detect camera movement using optical flow
+# script to detect camera movement using sparse optical flow (Lucas Kanade)
 #
 # see opencv tutorial on optical flow for more explanations of algorithms
 # (https://docs.opencv.org/4.5.1/d4/dee/tutorial_optical_flow.html)
