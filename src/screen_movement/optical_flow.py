@@ -164,7 +164,7 @@ if __name__ == '__main__':
 
     oldCorners = cv2.goodFeaturesToTrack(prevGray, mask=hudMask, **cornerParams)
 
-    if len(oldCorners[0][0]) < 1:
+    if oldCorners.size < 1:
         print('no points found to track')
         exit(1)
 
@@ -204,6 +204,6 @@ if __name__ == '__main__':
         # redetermine points to track to maintain tracking quality
         oldCorners = cv2.goodFeaturesToTrack(prevGray, mask=hudMask,
                                              **cornerParams)
-        if len(oldCorners[0][0]) < 1:
+        if oldCorners.size < 1:
             print('no points found to track')
             exit(1)
