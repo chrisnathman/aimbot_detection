@@ -136,10 +136,10 @@ if __name__ == '__main__':
         print('failed to open video file')
         exit(1)
 
-    ret, prevFrame = vid.read()
-    prevGray = cv2.cvtColor(prevFrame, cv2.COLOR_BGR2GRAY)
+    ret, oldFrame = vid.read()
+    oldGray = cv2.cvtColor(oldFrame, cv2.COLOR_BGR2GRAY)
 
-    frameHeight, frameWidth, frameChannels = prevFrame.shape
+    frameHeight, frameWidth, frameChannels = oldFrame.shape
 
     maskHeight = frameHeight // 4
     maskWidth = frameWidth // 4
@@ -147,7 +147,7 @@ if __name__ == '__main__':
     maskP1 = (frameWidth - maskWidth, frameHeight - maskHeight)
 
     # mask so corner detection will not find points on hud
-    hudMask = np.zeros_like(prevGray)
+    hudMask = np.zeros_like(oldGray)
 
     # masks out 1/4 of frame on top, bottom, left, and right
     # this is seems to be enough to mask out most of the HUD
@@ -162,7 +162,7 @@ if __name__ == '__main__':
                     'criteria': (cv2.TERM_CRITERIA_EPS |
                                  cv2.TERM_CRITERIA_COUNT, 10, 0.03)}
 
-    oldCorners = cv2.goodFeaturesToTrack(prevGray, mask=hudMask, **cornerParams)
+    oldCorners = cv2.goodFeaturesToTrack(oldGray, mask=hudMask, **cornerParams)
 
     if oldCorners.size < 1:
         print('no points found to track')
@@ -178,7 +178,7 @@ if __name__ == '__main__':
         
         newGray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-        newCorners, status, err = cv2.calcOpticalFlowPyrLK(prevGray, newGray,
+        newCorners, status, err = cv2.calcOpticalFlowPyrLK(oldGray, newGray,
                                                            oldCorners, None,
                                                            **opFlowParams)
 
@@ -199,10 +199,10 @@ if __name__ == '__main__':
         cv2.waitKey(0)
 
 
-        prevGray = newGray.copy()
+        oldGray = newGray.copy()
 
         # redetermine points to track to maintain tracking quality
-        oldCorners = cv2.goodFeaturesToTrack(prevGray, mask=hudMask,
+        oldCorners = cv2.goodFeaturesToTrack(oldGray, mask=hudMask,
                                              **cornerParams)
         if oldCorners.size < 1:
             print('no points found to track')
