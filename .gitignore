@@ -1,2 +1,4 @@
 # dont save clips in git
 gameplay/*
+
+__pycache__
