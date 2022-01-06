@@ -177,8 +177,8 @@ if __name__ == '__main__':
         if SHOW_POINT_MOVEMENT:
             frame = show_point_movement(goodOld, goodNew, frame, color)
 
-        screen_movement = calc_screen_movement(goodOld, goodNew)
-        frame = show_screen_movement(screen_movement, frame)
+        screenMovement = calc_screen_movement(goodOld, goodNew)
+        frame = show_screen_movement(screenMovement, frame)
         cv2.imshow('frame', cv2.resize(frame, TARGET_RES))
         cv2.waitKey(0)
 
