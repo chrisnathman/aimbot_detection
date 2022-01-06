@@ -8,6 +8,7 @@ import numpy as np
 import cv2
 import argparse
 import os
+from util import show_screen_movement
 
 # resolution to display images so they are not cut off
 # note that this does not affect the image processing
@@ -41,8 +42,7 @@ if __name__ == '__main__':
 
     frameHeight, frameWidth, frameChannels = oldFrame.shape
 
-    oldCenterP = (frameWidth // 2, frameHeight // 2)
-    oldCenterT = np.array([[[oldCenterP[0], oldCenterP[1]]]], dtype=np.float32)
+    oldCenter = np.array([[[frameWidth // 2, frameHeight // 2]]], dtype=np.float32)
 
     # TODO: use mask to ignore hud
 
@@ -80,11 +80,17 @@ if __name__ == '__main__':
         if SHOW_FRAME_POINTS:
             img = cv2.drawMatches(oldGray, oldKeypoints, newGray, newKeypoints,
                                   matches, None)
-            cv2.imshow('frame', cv2.resize(img, COMPARE_RES))
-            cv2.waitKey(0)
+            cv2.imshow('frame compare', cv2.resize(img, COMPARE_RES))
 
-        newCenter = cv2.perspectiveTransform(oldCenterT, hom)
+        newCenter = cv2.perspectiveTransform(oldCenter, hom)
 
-        print(newCenter)
+        screenMovement = (int(newCenter[0][0][0] - oldCenter[0][0][0]),
+                          int(newCenter[0][0][1] - oldCenter[0][0][1]))
+
+
+        frame = show_screen_movement(screenMovement, frame)
+
+        cv2.imshow('frame', cv2.resize(frame, TARGET_RES))
+        cv2.waitKey(0)
 
         oldGray = newGray.copy()
