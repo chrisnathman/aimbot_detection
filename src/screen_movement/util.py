@@ -27,4 +27,3 @@ def show_screen_movement(movement, frame):
     frame = cv2.arrowedLine(frame, screenCenter, endPt, MOVE_COLOR, ARROW_WIDTH,
                             ARROW_TYPE, ARROW_SHIFT, ARROW_TIP_LENGTH)
     return frame
-
