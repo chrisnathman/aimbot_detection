@@ -1,4 +1,3 @@
-#
 # script to detect camera movement using orb feature matching
 #
 # see
@@ -40,6 +39,11 @@ if __name__ == '__main__':
     ret, oldFrame = vid.read()
     oldGray = cv2.cvtColor(oldFrame, cv2.COLOR_BGR2GRAY)
 
+    frameHeight, frameWidth, frameChannels = oldFrame.shape
+
+    oldCenterP = (frameWidth // 2, frameHeight // 2)
+    oldCenterT = np.array([[[oldCenterP[0], oldCenterP[1]]]], dtype=np.float32)
+
     # TODO: use mask to ignore hud
 
     while True:
@@ -72,12 +76,15 @@ if __name__ == '__main__':
         hom, mask = cv2.findHomography(oldMatchedPoints, newMatchedPoints,
                                        cv2.RANSAC)
 
-        print(hom)
 
         if SHOW_FRAME_POINTS:
             img = cv2.drawMatches(oldGray, oldKeypoints, newGray, newKeypoints,
                                   matches, None)
             cv2.imshow('frame', cv2.resize(img, COMPARE_RES))
             cv2.waitKey(0)
+
+        newCenter = cv2.perspectiveTransform(oldCenterT, hom)
+
+        print(newCenter)
 
         oldGray = newGray.copy()
