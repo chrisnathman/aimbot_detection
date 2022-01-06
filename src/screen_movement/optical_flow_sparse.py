@@ -1,4 +1,3 @@
-#
 # script to detect camera movement using sparse optical flow (Lucas Kanade)
 #
 # see opencv tutorial on optical flow for more explanations of algorithms
@@ -9,6 +8,7 @@ import numpy as np
 import cv2
 import argparse
 import os
+from util import show_screen_movement
 
 # resolution to display images so they are not cut off
 # note that this does not affect the image processing
@@ -32,10 +32,6 @@ ARROW_TIP_LENGTH = 0.3
 # movement of each tracked point
 SHOW_POINT_MOVEMENT = True
 
-# color for main screen movement, non random color used here to ensure this
-# arrow will always be easily visible
-# [255, 0, 255] is magenta
-MOVE_COLOR = [255, 0, 255]
 
 # adds arrows for each point tracked
 # args - numpy arrays of old and new points being tracked, frame being
@@ -106,18 +102,6 @@ def calc_screen_movement(goodOld, goodNew):
     # return movement as integers
     return (int(round(xMove)), int(round(yMove)))
 
-
-# adds an arrow representing movement of the screen to the given frame
-# args - movement vector (x, y) as integers, frame being processed
-# returns - frame with arrow added for screen movement
-def show_screen_movement(movement, frame):
-    screenCenter = (frame.shape[1]//2, frame.shape[0]//2)
-    endPt = (screenCenter[0] + movement[0]*ARROW_SCALAR,
-             screenCenter[1] + movement[1]*ARROW_SCALAR)
-
-    frame = cv2.arrowedLine(frame, screenCenter, endPt, MOVE_COLOR, ARROW_WIDTH,
-                            ARROW_TYPE, ARROW_SHIFT, ARROW_TIP_LENGTH)
-    return frame
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='script to detect camera\
